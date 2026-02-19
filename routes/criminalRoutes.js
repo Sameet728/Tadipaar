@@ -29,8 +29,9 @@ router.delete("/:id", verifyToken, isAdmin, deleteCriminal);
 router.post("/login", criminalLogin);
 
 
-// router.get("/me", verifyToken, isCriminal, getMyProfile);
+router.get("/me", verifyToken, isCriminal, getMyProfile);
 
 
 module.exports = router;
+
 
