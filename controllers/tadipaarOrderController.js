@@ -4,58 +4,79 @@ const Area = require("../models/Area");
 
 
 // ✅ Admin — create tadipaar order
+
+
 exports.createOrder = async (req, res) => {
   try {
     const { criminalId, crimeType, startDate, endDate, restrictedAreaIds } =
       req.body;
 
-    // check criminal exists
+    // ✅ basic validation
+    if (!criminalId || !crimeType || !startDate || !endDate) {
+      return res.status(400).json({
+        msg: "criminalId, crimeType, startDate, endDate are required",
+      });
+    }
+
+    // ✅ check criminal exists
     const criminal = await Criminal.findById(criminalId);
     if (!criminal) {
       return res.status(404).json({ msg: "Criminal not found" });
     }
 
-    // 🔥 check active order already exists
+    // ✅ ensure only one ACTIVE order at a time
     const existingActive = await TadipaarOrder.findOne({
       criminalId,
       status: "active",
     });
 
-    if (existingActive) {
+    
+
+    // ✅ validate date logic
+    if (new Date(startDate) >= new Date(endDate)) {
       return res.status(400).json({
-        msg: "Active tadipaar order already exists for this criminal",
+        msg: "End date must be after start date",
       });
     }
 
-    // optional: validate areas
-    if (restrictedAreaIds?.length) {
-      const count = await Area.countDocuments({
-        _id: { $in: restrictedAreaIds },
-      });
+    // ✅ normalize areas array
+    let validAreaIds = [];
 
-      if (count !== restrictedAreaIds.length) {
+    if (Array.isArray(restrictedAreaIds) && restrictedAreaIds.length > 0) {
+      const areas = await Area.find({
+        _id: { $in: restrictedAreaIds },
+      }).select("_id");
+
+      if (areas.length !== restrictedAreaIds.length) {
         return res.status(400).json({
           msg: "One or more restricted areas are invalid",
         });
       }
+
+      validAreaIds = areas.map((a) => a._id);
     }
 
+    // ✅ create order (one order → many areas)
     const order = await TadipaarOrder.create({
       criminalId,
       crimeType,
       startDate,
       endDate,
-      restrictedAreaIds,
+      restrictedAreaIds: validAreaIds,
+      status: "active",
     });
 
     res.status(201).json({
+      success: true,
       msg: "Tadipaar order created successfully",
       order,
     });
   } catch (err) {
+    console.error("Create order error:", err);
     res.status(500).json({ msg: err.message });
   }
 };
+
 
 
 // ✅ Admin — get orders of a criminal
@@ -101,6 +122,21 @@ exports.getMyActiveOrder = async (req, res) => {
     }).populate("restrictedAreaIds");
 
     res.json(order);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+
+exports.getCriminalOrders = async (req, res) => {
+  try {
+    const { criminalId } = req.params;
+
+    const orders = await TadipaarOrder.find({ criminalId })
+      .populate("restrictedAreaIds")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

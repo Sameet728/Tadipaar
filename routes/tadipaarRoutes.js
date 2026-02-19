@@ -4,6 +4,9 @@ const router = express.Router();
 const {
   checkIn,
   getRecordsByCriminal,
+  getMyRestrictedAreas,
+  getCriminalRecords,
+  getAllViolations,
 } = require("../controllers/tadipaarController");
 
 const {
@@ -22,6 +25,26 @@ router.post(
   upload.single("selfie"),
   checkIn
 );
+
+router.get(
+  "/my-areas",
+  verifyToken,
+  isCriminal,
+  getMyRestrictedAreas
+);
+
+router.get(
+  "/records/:criminalId",
+  verifyToken,
+  getCriminalRecords
+);
+router.get(
+  "/violations",
+  verifyToken,
+  isAdmin,
+  getAllViolations
+);
+
 
 
 // 👮 Admin view records

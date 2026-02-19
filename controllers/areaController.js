@@ -35,3 +35,15 @@ exports.addArea = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+exports.getAllAreas = async (req, res) => {
+  try {
+    const areas = await Area.find().sort({ createdAt: -1 });
+
+    res.json({
+      count: areas.length,
+      areas,
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};

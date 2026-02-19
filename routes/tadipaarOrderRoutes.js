@@ -6,6 +6,7 @@ const {
   getOrdersByCriminal,
   updateOrderStatus,
   getMyActiveOrder,
+  getCriminalOrders,
 } = require("../controllers/tadipaarOrderController");
 
 const {
@@ -16,10 +17,14 @@ const {
 
 // 👮 Admin
 router.post("/create", verifyToken, isAdmin, createOrder);
-router.get("/criminal/:criminalId", verifyToken, isAdmin, getOrdersByCriminal);
+router.get("/criminal/:criminalId", verifyToken, getOrdersByCriminal);
 router.put("/:id/status", verifyToken, isAdmin, updateOrderStatus);
 
 // 🚶 Criminal
 router.get("/my-active", verifyToken, isCriminal, getMyActiveOrder);
+
+
+
+
 
 module.exports = router;

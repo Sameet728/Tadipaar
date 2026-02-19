@@ -13,7 +13,7 @@ exports.verifyToken = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded; // contains id and role
+    req.user = decoded; // { id, role }
     next();
   } catch (err) {
     return res.status(401).json({ msg: "Invalid token" });
@@ -22,7 +22,7 @@ exports.verifyToken = (req, res, next) => {
 
 // ✅ admin only
 exports.isAdmin = (req, res, next) => {
-  if (req.user.role !== "admin") {
+  if (!req.user || req.user.role !== "admin") {
     return res.status(403).json({ msg: "Admin access required" });
   }
   next();
@@ -30,7 +30,10 @@ exports.isAdmin = (req, res, next) => {
 
 // ✅ criminal only
 exports.isCriminal = (req, res, next) => {
-  if (req.user.role !== "criminal") {
+  // optional debug (remove in production)
+  console.log("User role:", req.user.role);
+
+  if (!req.user || req.user.role !== "criminal") {
     return res.status(403).json({ msg: "Criminal access required" });
   }
   next();

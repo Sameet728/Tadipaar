@@ -17,8 +17,6 @@ const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 const criminalRoutes = require("./routes/criminalRoutes");
 app.use("/api/criminal", criminalRoutes);
-const restrictedAreaRoutes = require("./routes/restrictedAreaRoutes");
-app.use("/api/restricted-area", restrictedAreaRoutes);
 const areaRoutes = require("./routes/areaRoutes");
 app.use("/api/area", areaRoutes);
 const tadipaarRoutes = require("./routes/tadipaarRoutes");

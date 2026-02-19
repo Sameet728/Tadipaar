@@ -137,3 +137,24 @@ exports.getMyProfile = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+
+
+exports.getAllCriminals = async (req, res) => {
+  try {
+    const criminals = await Criminal.find()
+      .select("-password") // 🔒 hide password
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: criminals.length,
+      criminals,
+    });
+  } catch (err) {
+    console.error("Get all criminals error:", err);
+    res.status(500).json({
+      success: false,
+      msg: "Server error",
+    });
+  }
+};
