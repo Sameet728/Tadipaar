@@ -16,33 +16,46 @@ const tadipaarRecordSchema = new mongoose.Schema(
       index: true,
     },
 
+    // ✅ full timestamp (NOT start of day)
     date: {
       type: Date,
       required: true,
+      default: Date.now,
+      index: true,
     },
 
     selfieUrl: {
       type: String,
+      required: true,
     },
 
-    latitude: Number,
-    longitude: Number,
+    latitude: {
+      type: Number,
+      required: true,
+    },
+
+    longitude: {
+      type: Number,
+      required: true,
+    },
 
     status: {
       type: String,
       enum: ["compliant", "location_violation", "not_reported"],
       default: "compliant",
+      index: true,
     },
 
-    violationReason: String,
+    violationReason: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
 
-// 🔥 prevent duplicate per day per order
-tadipaarRecordSchema.index(
-  { orderId: 1, date: 1 },
-  { unique: true }
-);
+// 🚀 performance indexes (IMPORTANT for scaling)
+tadipaarRecordSchema.index({ criminalId: 1, createdAt: -1 });
+tadipaarRecordSchema.index({ orderId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("TadipaarRecord", tadipaarRecordSchema);
