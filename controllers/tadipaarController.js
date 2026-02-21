@@ -8,7 +8,6 @@ exports.checkIn = async (req, res) => {
     const { latitude, longitude } = req.body;
     const criminalId = req.user.id;
 
-    // ✅ file from multer
     const selfieUrl = req.file?.path;
 
     if (!selfieUrl) {
@@ -17,7 +16,7 @@ exports.checkIn = async (req, res) => {
       });
     }
 
-    // ✅ active order
+    // ✅ get active order
     const order = await TadipaarOrder.findOne({
       criminalId,
       status: "active",
@@ -52,15 +51,15 @@ exports.checkIn = async (req, res) => {
       }
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 🔥 IMPORTANT CHANGE — use full timestamp (not start of day)
+    const now = new Date();
 
     const status = violation ? "location_violation" : "compliant";
 
     const record = await TadipaarRecord.create({
       orderId: order._id,
       criminalId,
-      date: today,
+      date: now, // ✅ full time
       selfieUrl,
       latitude,
       longitude,
@@ -76,11 +75,6 @@ exports.checkIn = async (req, res) => {
       record,
     });
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({
-        msg: "Today's check-in already submitted",
-      });
-    }
     res.status(500).json({ msg: err.message });
   }
 };
@@ -161,4 +155,5 @@ exports.getAllViolations = async (req, res) => {
       msg: "Server error",
     });
   }
+
 };
